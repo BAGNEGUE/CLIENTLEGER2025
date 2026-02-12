@@ -171,5 +171,35 @@ class Controleur {
         // Contrôler les données email et mdp
         return $this->unModele->verifConnexion($email, $mdp);
     }
+
+    public function updatePassword($email, $new_password, $type) {
+        switch($type) {
+            case "user":
+                $requete = "UPDATE user SET mdp = :mdp WHERE email = :email";
+                break;
+            case "candidat":
+                $requete = "UPDATE candidat SET mdp = :mdp WHERE email = :email";
+                break;
+            case "moniteur":
+                $requete = "UPDATE moniteur SET mdp = :mdp WHERE email = :email";
+                break;
+            case "responsable":
+                $requete = "UPDATE responsable SET mdp = :mdp WHERE email = :email";
+                break;
+            default:
+                return false;
+        }
+
+        try {
+            $donnees = array(
+                ":email" => $email,
+                ":mdp" => password_hash($new_password, PASSWORD_DEFAULT)
+            );
+            $exec = $this->unModele->getPdo()->prepare($requete);
+            return $exec->execute($donnees);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
 ?>

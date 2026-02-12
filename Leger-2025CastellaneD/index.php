@@ -32,12 +32,66 @@
 			$_SESSION["nom"] = $unUser["nom"]; 
 			$_SESSION["prenom"] = $unUser["prenom"]; 
 			$_SESSION["email"] = $unUser["email"];
-			$_SESSION["role"] = $unUser["role"]; 
-			//actualisation de la page 
-			header("Location: index.php?page=1"); 
+			$_SESSION["type"] = $unUser["type"];
+			
+			// Redirection selon le type d'utilisateur
+			switch($unUser["type"]) {
+				case "user":
+					$_SESSION["role"] = $unUser["role"];
+					break;
+				case "candidat":
+					$_SESSION["idcandidat"] = $unUser["idcandidat"];
+					break;
+				case "moniteur":
+					$_SESSION["idmoniteur"] = $unUser["idmoniteur"];
+					break;
+				case "responsable":
+					$_SESSION["idresponsable"] = $unUser["idresponsable"];
+					break;
+			}
+			
+			// Vérifier si le mot de passe doit être réinitialisé
+			if ($mdp === "password") {
+				$_SESSION["reset_password"] = true;
+				header("Location: index.php?page=10");
+			} else {
+				//actualisation de la page 
+				header("Location: index.php?page=1");
+			}
 		}
 		else {
 			echo "<br> Veuillez Vérifier vos identifiants."; 
+		}
+	}
+
+	// Gestion de la réinitialisation du mot de passe
+	if (isset($_POST["reset_password"])) {
+		$current_password = $_POST["current_password"];
+		$new_password = $_POST["new_password"];
+		$confirm_password = $_POST["confirm_password"];
+
+		if ($new_password === $confirm_password) {
+			$email = $_SESSION["email"];
+			$type = $_SESSION["type"];
+			
+			// Vérifier le mot de passe actuel
+			$unUser = $unControleur->verifConnexion($email, $current_password);
+			
+			if ($unUser) {
+				// Mettre à jour le mot de passe
+				$success = $unControleur->updatePassword($email, $new_password, $type);
+				
+				if ($success) {
+					unset($_SESSION["reset_password"]);
+					header("Location: index.php?page=1");
+				} else {
+					echo "<br> Une erreur est survenue lors de la mise à jour du mot de passe.";
+				}
+			} else {
+				echo "<br> Le mot de passe actuel est incorrect.";
+			}
+		} else {
+			echo "<br> Les mots de passe ne correspondent pas.";
 		}
 	}
 
@@ -98,6 +152,7 @@ echo ' <div id="navbar" style="background-color : #f0f0f0 ;">
 		case 9 : session_destroy(); unset($_SESSION['email']); 
 		header("Location: index.php");
 		break;
+		case 10 : require_once ("vue/vue_reset_password.php"); break;
 	}
 } //fin du if session 
 ?>

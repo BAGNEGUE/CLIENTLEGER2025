@@ -24,7 +24,7 @@ class Modele {
             ':prenom' => $tab['prenom'],
             ':age' => $tab['age'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -60,7 +60,7 @@ class Modele {
             ':prenom' => $tab['prenom'],
             ':age' => $tab['age'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -88,9 +88,9 @@ class Modele {
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
             ':numero_telephone' => $tab['numero_telephone'],
-            ':type_user' => "MONITEUR", // Type_user est toujours "MONITEUR"
+            ':type_user' => "MONITEUR",
             ':idresponsable' => $tab['idresponsable']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -133,18 +133,14 @@ class Modele {
      * @param array $tab Les nouvelles données du moniteur.
      */
     public function updateMoniteur($tab) {
-        $requete = "UPDATE moniteur 
-                    SET NOM = :nom, PRENOM = :prenom, EMAIL = :email, MDP = :mdp, 
-                        NUMERO_TELEPHONE = :numero_telephone, IDRESPONSABLE = :idresponsable 
-                    WHERE IDmoniteur = :idmoniteur;";
+        $requete = "UPDATE moniteur SET NOM = :nom, PRENOM = :prenom, EMAIL = :email, MDP = :mdp, NUMERO_TELEPHONE = :tel WHERE IDmoniteur = :idmoniteur;";
         $donnees = array(
             ':idmoniteur' => $tab['idmoniteur'],
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
-            ':numero_telephone' => $tab['numero_telephone'],
-            ':idresponsable' => $tab['idresponsable']
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':tel' => $tab['numero_telephone']
         );
         $exec = $this->unPdo->prepare($requete);
         $exec->execute($donnees);
@@ -414,7 +410,7 @@ class Modele {
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -443,13 +439,13 @@ class Modele {
     }
 
     public function updateResponsable($tab) {
-        $requete = "UPDATE responsable SET nom = :nom, prenom = :prenom, email = :email, mdp = :mdp, numero_telephone = :tel WHERE idresponsable = :idresponsable;";
+        $requete = "UPDATE responsable SET NOM = :nom, PRENOM = :prenom, EMAIL = :email, MDP = :mdp, NUMERO_TELEPHONE = :tel WHERE IDresponsable = :idresponsable;";
         $donnees = array(
             ':idresponsable' => $tab['idresponsable'],
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => $tab['mdp'],
+            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -465,13 +461,49 @@ class Modele {
     }
 
 	/********* Gestion des users ****************/
-	public function verifConnexion ($email, $mdp){
-		$requete = "select * from user where email =:email and mdp =:mdp ;"; 
-		$exec = $this->unPdo->prepare ($requete);
-		$donnees = array(":email"=>$email, ":mdp"=>$mdp);
-		$exec->execute ($donnees);
-		return $exec->fetch(); 
-	}
+	public function verifConnexion($email, $mdp) {
+        // Vérifier dans la table user
+        $requete = "SELECT *, 'user' as type FROM user WHERE email = :email";
+        $exec = $this->unPdo->prepare($requete);
+        $exec->execute(array(":email" => $email));
+        $user = $exec->fetch();
+
+        if ($user && password_verify($mdp, $user['mdp'])) {
+            return $user;
+        }
+
+        // Vérifier dans la table candidat
+        $requete = "SELECT *, 'candidat' as type FROM candidat WHERE email = :email";
+        $exec = $this->unPdo->prepare($requete);
+        $exec->execute(array(":email" => $email));
+        $candidat = $exec->fetch();
+
+        if ($candidat && password_verify($mdp, $candidat['mdp'])) {
+            return $candidat;
+        }
+
+        // Vérifier dans la table moniteur
+        $requete = "SELECT *, 'moniteur' as type FROM moniteur WHERE email = :email";
+        $exec = $this->unPdo->prepare($requete);
+        $exec->execute(array(":email" => $email));
+        $moniteur = $exec->fetch();
+
+        if ($moniteur && password_verify($mdp, $moniteur['mdp'])) {
+            return $moniteur;
+        }
+
+        // Vérifier dans la table responsable
+        $requete = "SELECT *, 'responsable' as type FROM responsable WHERE email = :email";
+        $exec = $this->unPdo->prepare($requete);
+        $exec->execute(array(":email" => $email));
+        $responsable = $exec->fetch();
+
+        if ($responsable && password_verify($mdp, $responsable['mdp'])) {
+            return $responsable;
+        }
+
+        return false;
+    }
 } 
 ?>
 
