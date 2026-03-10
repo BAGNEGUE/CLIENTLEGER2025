@@ -24,7 +24,7 @@ class Modele {
             ':prenom' => $tab['prenom'],
             ':age' => $tab['age'],
             ':email' => $tab['email'],
-            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':mdp' =>$tab['mdp'],
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -60,7 +60,7 @@ class Modele {
             ':prenom' => $tab['prenom'],
             ':age' => $tab['age'],
             ':email' => $tab['email'],
-            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':mdp' => $tab['mdp'], 
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -88,7 +88,7 @@ class Modele {
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':mdp' => $tab['mdp'],
             ':numero_telephone' => $tab['numero_telephone'],
             ':type_user' => "MONITEUR",
             ':idresponsable' => $tab['idresponsable']
@@ -410,7 +410,7 @@ class Modele {
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':mdp' => $tab['mdp'],
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
@@ -445,7 +445,7 @@ class Modele {
             ':nom' => $tab['nom'],
             ':prenom' => $tab['prenom'],
             ':email' => $tab['email'],
-            ':mdp' => password_hash($tab['mdp'], PASSWORD_DEFAULT),
+            ':mdp' => $tab['mdp'], 
             ':tel' => $tab['telephone']
         );
         $exec = $this->unPdo->prepare($requete);
