@@ -193,7 +193,7 @@ class Controleur {
         try {
             $donnees = array(
                 ":email" => $email,
-                ":mdp" => password_hash($new_password, PASSWORD_DEFAULT)
+                ":mdp" =>  $mdp,
             );
             $exec = $this->unModele->getPdo()->prepare($requete);
             return $exec->execute($donnees);
